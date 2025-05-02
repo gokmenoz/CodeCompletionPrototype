@@ -1,0 +1,40 @@
+# Paths
+output_dir: "analysis_output"
+data_path: "analysis_output/python_github_sample.json"
+model_path: "analysis_output/local_codellama_model"
+lora_path: "analysis_output/lora_adapters"
+
+# Model and training
+model_name: "codellama/CodeLlama-7b-Instruct-hf"
+
+# Tokenizer
+max_seq_length: 512
+
+# LoRA Config
+lora_r: 8
+lora_alpha: 16
+lora_dropout: 0.05
+target_modules:
+  - "q_proj"
+  - "v_proj"
+
+# Training
+num_train_epochs: 3
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 0.0002
+logging_steps: 10
+save_strategy: "steps"
+eval_steps: 50
+eval_strategy: "steps"
+save_total_limit: 2
+early_stopping_patience: 1
+
+# Inference config
+max_new_tokens: 100
+top_p: 0.95
+top_k: 50
+temperature: 0.7
+
+# Prompt
+prompt: "def add_numbers(a, b):"
