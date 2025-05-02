@@ -1,7 +1,7 @@
 # Paths
 output_dir: "analysis_output"
 data_path: "analysis_output/python_github_sample.json"
-model_path: "analysis_output/local_codellama_model"
+base_model_path: "analysis_output/local_codellama_model"
 lora_path: "analysis_output/lora_adapters"
 
 # Model and training
