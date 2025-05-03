@@ -1,15 +1,18 @@
-import json
 import argparse
+import json
+
 import pandas as pd
+from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
 from rouge_score import rouge_scorer
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+
 
 def load_results(path):
     with open(path, "r") as f:
         return json.load(f)
 
+
 def evaluate(results):
-    rouge = rouge_scorer.RougeScorer(['rougeL'], use_stemmer=True)
+    rouge = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
     smooth = SmoothingFunction().method1
 
     scores = []
@@ -26,13 +29,16 @@ def evaluate(results):
         # ROUGE-L
         rouge_l = rouge.score(ref, hyp)["rougeL"].fmeasure
 
-        scores.append({
-            "id": item["id"],
-            "bleu": bleu,
-            "rougeL": rouge_l,
-        })
+        scores.append(
+            {
+                "id": item["id"],
+                "bleu": bleu,
+                "rougeL": rouge_l,
+            }
+        )
 
     return scores
+
 
 def summarize(scores, output_dir):
     bleu_avg = sum(s["bleu"] for s in scores) / len(scores)
@@ -49,10 +55,19 @@ def summarize(scores, output_dir):
     df.to_csv(csv_path, index=False)
     print(f"✅ Evaluation scores logged to: {csv_path}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results", "-r", required=True, help="Path to inference_results.json")
-    parser.add_argument("--output_dir", "-o", required=False, default="analysis_output", help="Where to save evaluation CSV")
+    parser.add_argument(
+        "--results", "-r", required=True, help="Path to inference_results.json"
+    )
+    parser.add_argument(
+        "--output_dir",
+        "-o",
+        required=False,
+        default="analysis_output",
+        help="Where to save evaluation CSV",
+    )
     args = parser.parse_args()
 
     results = load_results(args.results)

@@ -1,5 +1,6 @@
-from vllm import LLM, SamplingParams
 import torch
+from vllm import LLM, SamplingParams
+
 
 def vllm_inference(config, merged_model_path, test_dataset):
     # Instead of tokenizer/model from HuggingFace, use vLLM LLM
@@ -21,15 +22,16 @@ def vllm_inference(config, merged_model_path, test_dataset):
         outputs = llm.generate([prompt], sampling_params)
         completion = outputs[0].outputs[0].text  # Get first generated output
 
-        results.append({
-            "id": idx,
-            "prompt": prompt,
-            "completion": completion,
-        })
+        results.append(
+            {
+                "id": idx,
+                "prompt": prompt,
+                "completion": completion,
+            }
+        )
 
         if idx < 3:
             print(f"=== Example {idx} ===")
             print(f"Prompt:\n{prompt}")
             print(f"Completion:\n{completion}")
             print("-" * 50)
-

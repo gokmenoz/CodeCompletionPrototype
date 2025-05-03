@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import torch
 
 
@@ -7,7 +8,9 @@ def inference(config, model, tokenizer, test_dataset):
     # Check if inference results already exist
     output_file = os.path.join(config["output_dir"], "inference_results.json")
     if os.path.exists(output_file):
-        print(f"✅ Inference results already exist at {output_file}. Skipping inference...")
+        print(
+            f"✅ Inference results already exist at {output_file}. Skipping inference..."
+        )
     else:
 
         device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -19,8 +22,14 @@ def inference(config, model, tokenizer, test_dataset):
 
         for idx, example in enumerate(test_dataset):
             prompt = example.get("code", "")
-            
-            inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding="max_length", max_length=512).to(device)
+
+            inputs = tokenizer(
+                prompt,
+                return_tensors="pt",
+                truncation=True,
+                padding="max_length",
+                max_length=512,
+            ).to(device)
 
             output = model.generate(
                 **inputs,
@@ -33,12 +42,14 @@ def inference(config, model, tokenizer, test_dataset):
 
             completion = tokenizer.decode(output[0], skip_special_tokens=True)
 
-            results.append({
-                "id": idx,
-                "prompt": prompt,
-                "completion": completion,
-                "reference": example.get("completion", "")
-            })
+            results.append(
+                {
+                    "id": idx,
+                    "prompt": prompt,
+                    "completion": completion,
+                    "reference": example.get("completion", ""),
+                }
+            )
 
             if idx < 3:  # Print only first few completions
                 print(f"=== Example {idx} ===")

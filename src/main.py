@@ -42,12 +42,3 @@ if __name__ == "__main__":
     scores = evaluate(data)
     summarize(scores, config["output_dir"])
     error_analysis(config["output_dir"])
-
-    # # vLLM inference 
-    # # Merge LoRA into base model
-    # model = model.merge_and_unload()
-
-    # # Save merged model
-    # merged_model_path = os.path.join(config["output_dir"], "merged_model")
-    # model.save_pretrained(merged_model_path)
-    # print(f"✅ Merged model (LoRA + base) saved to {merged_model_path}")

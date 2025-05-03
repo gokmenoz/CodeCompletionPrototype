@@ -1,27 +1,37 @@
 import streamlit as st
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # --- CONFIG ---
 MODEL_PATH = "analysis_output/local_codellama_model"
 LORA_PATH = "analysis_output/lora_adapters"
-DEVICE = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+DEVICE = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
+
 
 # --- LOAD MODEL ---
 @st.cache_resource
 def load_model():
-    base_model = AutoModelForCausalLM.from_pretrained(MODEL_PATH, device_map="auto", torch_dtype=torch.float16)
+    base_model = AutoModelForCausalLM.from_pretrained(
+        MODEL_PATH, device_map="auto", torch_dtype=torch.float16
+    )
     model = PeftModel.from_pretrained(base_model, LORA_PATH)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
     tokenizer.pad_token = tokenizer.eos_token
     return model.to(DEVICE), tokenizer
 
+
 model, tokenizer = load_model()
 
 # --- UI ---
 st.title("💡 CodeLLaMA Code Completion Prototype")
-prompt = st.text_area("✍️ Enter a Python function prompt", value="def add(a, b):", height=100)
+prompt = st.text_area(
+    "✍️ Enter a Python function prompt", value="def add(a, b):", height=100
+)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -47,4 +57,4 @@ if st.button("🚀 Generate Completion"):
         completion = tokenizer.decode(output[0], skip_special_tokens=True)
 
         st.subheader("✅ Completion")
-        st.code(completion[len(prompt):], language="python")
+        st.code(completion[len(prompt) :], language="python")

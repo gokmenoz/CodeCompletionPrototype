@@ -1,19 +1,22 @@
-import os
 import json
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import LoraConfig, get_peft_model
-import torch
+import os
 import time
-from transformers import (Trainer, TrainingArguments, 
-                          EarlyStoppingCallback, AutoModelForCausalLM,
-                          AutoTokenizer)
-from peft import PeftModel
+
+import torch
+from peft import LoraConfig, PeftModel, get_peft_model
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    EarlyStoppingCallback,
+    Trainer,
+    TrainingArguments,
+)
 
 
 def download_base_model(base_model_path):
     ##### Model download
     base_model_name = "codellama/CodeLlama-7b-Instruct-hf"
-    
+
     if not os.path.exists(base_model_path):
         print("Downloading model...")
         base_model = AutoModelForCausalLM.from_pretrained(
@@ -22,7 +25,7 @@ def download_base_model(base_model_path):
             torch_dtype=torch.float16,
         )
         tokenizer = AutoTokenizer.from_pretrained(base_model_name)
-        
+
         # Save locally
         base_model.save_pretrained(base_model_path)
         tokenizer.save_pretrained(base_model_path)
@@ -38,10 +41,11 @@ def download_base_model(base_model_path):
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     print(f"Found the {device} device, saving the model.")
     # base_model = base_model.to(device)
-    
+
     tokenizer.pad_token = tokenizer.eos_token
 
     return base_model, tokenizer
+
 
 def prepare_lora(base_model, lora_path):
     if not os.path.exists(lora_path):
@@ -66,11 +70,12 @@ def prepare_lora(base_model, lora_path):
 
     return model
 
+
 def save_train_summary(trainer, train_config, output_dir, start_time):
     # Create summary dictionary
     summary = {
         "start_time": start_time,
-        "end_time": str(time.strftime('%Y-%m-%d %H:%M:%S')),
+        "end_time": str(time.strftime("%Y-%m-%d %H:%M:%S")),
         "total_steps": trainer.state.global_step,
         "best_metric": trainer.state.best_metric,
         "best_model_checkpoint": trainer.state.best_model_checkpoint,
@@ -89,10 +94,12 @@ def train(model, train_dataset, valid_dataset, train_config, output_dir):
     # Check if LoRA adapters already exist
     lora_output_dir = os.path.join(output_dir, "lora_adapters")
     if os.path.exists(os.path.join(lora_output_dir, "adapter_model.safetensors")):
-        print(f"✅ LoRA adapters already exist at {lora_output_dir}. Skipping training...")
+        print(
+            f"✅ LoRA adapters already exist at {lora_output_dir}. Skipping training..."
+        )
         model = PeftModel.from_pretrained(model, lora_output_dir)
         return model
-    
+
     training_args = TrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=train_config["per_device_train_batch_size"],
@@ -119,17 +126,20 @@ def train(model, train_dataset, valid_dataset, train_config, output_dir):
         train_dataset=train_dataset,
         eval_dataset=valid_dataset,
         callbacks=[
-            EarlyStoppingCallback(early_stopping_patience=train_config["early_stopping_patience"])
+            EarlyStoppingCallback(
+                early_stopping_patience=train_config["early_stopping_patience"]
+            )
         ],
     )
 
-    start_time = time.strftime('%Y-%m-%d %H:%M:%S')
+    start_time = time.strftime("%Y-%m-%d %H:%M:%S")
     trainer.train()
 
     # Save training logs (losses, metrics) to CSV
     logs = trainer.state.log_history  # list of dicts
 
     import pandas as pd
+
     logs_df = pd.DataFrame(logs)
     logs_df.to_csv(os.path.join(output_dir, "train_logs.csv"), index=False)
 
