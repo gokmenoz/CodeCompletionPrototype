@@ -1,0 +1,21 @@
+# Core ML and Transformers
+torch==2.7.0
+transformers>=4.40.0
+sentencepiece  # Required by some LLaMA models
+
+# Streamlit UI
+streamlit>=1.32.0
+
+# Evaluation Metrics
+nltk
+rouge-score
+sacrebleu
+
+# General utilities
+tqdm
+numpy
+scikit-learn
+
+# Optional for Apple Silicon (M1/M2) compatibility - uncomment if needed
+# torchaudio==2.7.0
+# torchvision==0.22.0
